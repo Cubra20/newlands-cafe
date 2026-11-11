@@ -181,7 +181,9 @@ function renderManage() {
   $('#inv').innerHTML = S.items.map(i => `<tr><td><img class="th ${i.img ? '' : 'def'}" src="${esc(imgOf(i))}" alt="" onerror="noImg(this)"></td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
     <td><input type="number" min="1" data-f="price" data-id="${i.id}" value="${i.p[0]}" aria-label="Price of ${esc(i.name)}"></td>
     <td><input type="number" min="0" data-f="stock" data-id="${i.id}" value="${i.stock}" aria-label="Stock of ${esc(i.name)}"></td>
-    <td><button class="ghost" data-act="photo" data-id="${i.id}">Photo</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
+    <td><button class="ghost" data-act="photo" data-id="${i.id}">Photo</button>
+    <button class="ghost" data-act="edit" data-id="${i.id}">Edit</button>
+    <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
   $('#msgs').innerHTML = S.msgs.map(m => `<div class="order"><b>${esc(m.n)}</b> (${esc(m.e)})<br>${esc(m.m)}</div>`).join('') || '<p>No messages yet.</p>';
 }
 
@@ -316,6 +318,7 @@ const acts = {
   closen: () => $('#ndlg').close(),
   photo: b => { pickFor = +b.dataset.id; $('#rowpick').click(); },
   status: b => { const o = S.orders.find(o => o.no === +b.dataset.no); o.status = o.status === 'Pending' ? 'Served' : 'Pending'; save(); renderManage(); renderHero(); },
+  edit: b => { const it = item(+b.dataset.id); $('#an').value = it.name; $('#ac').value = it.cat; $('#ap').value = it.p[0]; $('#as').value = it.stock; newFile = null; $('#pimg').src = imgOf(it); catChanged(); pending = it.id; $('#edlg').showModal(); },
   del: b => { const it = item(+b.dataset.id); if (!confirm('Remove ' + it.name + ' from the menu?')) return; S.items = S.items.filter(i => i !== it); cart = cart.filter(l => l.id !== it.id); save(); renderManage(); renderMenu(); renderCart(); renderHero(); },
   reset: () => { if (!confirm('Delete all orders, messages, photos and stock changes?')) return; S = seed(); cart = []; save(); renderMenu(); renderCart(); renderHero(); renderManage(); toast('Data reset. Click Link my images folder to relink your pictures.'); }
 };

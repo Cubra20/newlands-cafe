@@ -30,12 +30,23 @@
 
 
 <dialog id="ndlg"><form id="addform"><h3>Add a menu item</h3>
-  <div class="prev"><img id="pimg" src="logo.svg" alt="Item photo preview"><div><label for="pf">Photo (optional)</label><input id="pf" type="file" accept="image/*"><small id="pathhint"></small></div></div>
+  <div class="prev"><img id="pimg" src="images/logo.png.png" alt="Item photo preview"><div><label for="pf">Photo (optional)</label><input id="pf" type="file" accept="image/*"><small id="pathhint"></small></div></div>
   <label for="an">Name</label><input id="an" required maxlength="40">
   <label for="ac">Category</label><select id="ac"></select>
   <label for="ap" id="aplab">Price (₱)</label><input id="ap" type="number" min="1" required>
   <label for="as">Starting stock</label><input id="as" type="number" min="0" value="20" required>
-  <div class="acts"><button type="button" class="ghost" data-act="closen">Cancel</button><button class="pill dark">Save item</button></div></form></dialog>
+  <div class="acts"><button type="button" class="ghost" data-act="closen">Cancel</button><button class="pill dark">Save item</button></div></form>
+</dialog>
+
+<dialog id="edlg"><form id="editform"><h3>Edit a menu item</h3>
+  <div class="prev"><img id="pimg" src="images/logo.png.png" alt="Item photo preview"><div><label for="pf">Photo (optional)</label><input id="pf" type="file" accept="image/*"><small id="pathhint"></small></div></div>
+  <label for="an">Name</label><input id="an" required maxlength="40">
+  <label for="ac">Category</label><select id="ac"></select>
+  <label for="ap" id="aplab">Price (₱)</label><input id="ap" type="number" min="1" required>
+  <label for="as">Starting stock</label><input id="as" type="number" min="0" value="20" required>
+  <div class="acts"><button type="button" class="ghost" data-act="closen">Cancel</button><button class="pill dark">Save item</button></div></form>
+</dialog>
+
 <input type="file" id="rowpick" accept="image/*" hidden>
 <input type="file" id="dirpick" webkitdirectory multiple hidden>
 <script src="script.js"></script>
