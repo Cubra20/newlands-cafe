@@ -270,6 +270,7 @@ async function savePhoto(file, it) {
    HOW: openNew() clears the form and shows the dialog. Choosing a photo fills newFile. On submit build the item, save the photo to disk
    with savePhoto() (empty = shop logo), push the item, save(), close. */
 function openNew() { $('#addform').reset(); newFile = null; $('#pimg').src = LOGO; catChanged(); $('#ndlg').showModal(); }
+function openEdit(it) { $('#editform').reset(); newFile = null; $('#pimg').src = imgOf(it); catChanged(); $('#edlg').showModal(); }
 function catChanged() {
   const c = CATS[$('#ac').value];
   $('#aplab').textContent = c.sizes ? 'Price (₱) for 8oz (12oz is ₱20 more)' : 'Price (₱)';
