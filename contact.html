@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Us · Newland’s Café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="contact">
+<header class="nav solid" id="nav">
+  <a class="brand" href="index.html"><img src="images/logo.png.png" alt=""><span>NEWLANDS</span></a>
+  <nav class="links"><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="story.html">Our Story</a><a href="contact.html" class="on">Contact Us</a></nav>
+  <button class="orderbtn" data-act="drawer">My Order <b id="count">0</b></button>
+</header>
+
+<main>
+<section id="contact">
+    <h2>Contact Us</h2>
+    <form id="cform">
+      <label for="cn">Your name</label><input id="cn" required maxlength="40">
+      <label for="ce">Email</label><input id="ce" type="email" required>
+      <label for="cm">Message</label><textarea id="cm" rows="4" required maxlength="400"></textarea>
+      <p><button class="pill gold">Send message</button></p>
+    </form>
+  </section>
+</main>
+
+<footer class="sitefoot">Newland’s Café · Sisters of Mary School · <a href="manage.html">Staff: Manage</a></footer>
+<script src="script.js"></script>
+</body>
+</html>

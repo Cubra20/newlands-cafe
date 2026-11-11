@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage · Newland’s Café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="manage">
+<header class="nav solid" id="nav">
+  <a class="brand" href="index.html"><img src="images/logo.png.png" alt=""><span>NEWLANDS</span></a>
+  <nav class="links"><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="story.html">Our Story</a><a href="contact.html">Contact Us</a></nav>
+  <button class="orderbtn" data-act="drawer">My Order <b id="count">0</b></button>
+</header>
+
+<main id="manage">
+  <div class="mwrap">
+    <p class="eyebrow gold">Staff only</p><h2>Manage</h2>
+    <div class="mstats" id="stats"></div>
+    <p><button class="pill dark" data-act="newitem">+ Add a menu item</button> <button class="pill dark" data-act="linkdir">Link my images folder</button> <button class="ghost" data-act="reset">Reset all data</button></p>
+    <p><small>Link my images folder: choose your <b>images</b> folder (images/hot collections/…). Pictures are matched to items by name, and photos you add are saved into that folder.</small></p>
+    <h3>Orders</h3><div id="orders"></div>
+    <h3>Menu and stock</h3>
+    <div class="wrap"><table><thead><tr><th>Photo</th><th>Item</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody id="inv"></tbody></table></div>
+    <h3>Messages</h3><div id="msgs"></div>
+  </div>
+</main>
+
+
+<dialog id="ndlg"><form id="addform"><h3>Add a menu item</h3>
+  <div class="prev"><img id="pimg" src="logo.svg" alt="Item photo preview"><div><label for="pf">Photo (optional)</label><input id="pf" type="file" accept="image/*"><small id="pathhint"></small></div></div>
+  <label for="an">Name</label><input id="an" required maxlength="40">
+  <label for="ac">Category</label><select id="ac"></select>
+  <label for="ap" id="aplab">Price (₱)</label><input id="ap" type="number" min="1" required>
+  <label for="as">Starting stock</label><input id="as" type="number" min="0" value="20" required>
+  <div class="acts"><button type="button" class="ghost" data-act="closen">Cancel</button><button class="pill dark">Save item</button></div></form></dialog>
+<input type="file" id="rowpick" accept="image/*" hidden>
+<input type="file" id="dirpick" webkitdirectory multiple hidden>
+<script src="script.js"></script>
+</body>
+</html>
