@@ -476,9 +476,10 @@ button,input,select,textarea{
 #contact .detail{
     display:flex;
     flex-wrap:wrap;
-    gap:2rem
+    gap:4rem
 }
 #contact form{
+    min-width:460px;
     max-width:460px
 }
 #contact input,
