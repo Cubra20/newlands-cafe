@@ -479,8 +479,8 @@ button,input,select,textarea{
     gap:4rem
 }
 #contact form{
-    min-width:460px;
-    max-width:460px
+    min-width:30%;
+    max-width:50%
 }
 #contact input,
 #contact textarea{
