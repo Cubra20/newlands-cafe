@@ -588,7 +588,10 @@ small{color:#6b5a4a}
     inset:0;
     z-index:40;
     background:rgba(30,18,10,.45);
-    opacity:0;pointer-events:none;transition:opacity .3s}
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s
+}
 #drawer{
     position:fixed;
     top:0;
