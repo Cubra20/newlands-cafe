@@ -1,4 +1,4 @@
-/* NEWLAND'S CAFE: menu + ordering + stock + item photos. HTML/CSS/JS only. Data is saved in this browser (localStorage).
+/* NEWLAND'S CAFE: menu + ordering + stock + item photos. HTML/CSS/JS only. We save the data in this browser (localStorage).
    Each function has a TASK (what it must do) and HOW (a beginner-friendly way to do it) comment for teammates. */
 
 const KEY = 'newlands-v1';
@@ -31,7 +31,7 @@ const MENU = {
 let S = load() || seed();   // S = the whole saved state: items, orders, msgs, counters
 let cart = [];              // cart lines: {id, size, add:[add-on indexes], qty}
 let curCat = 'hot';
-let newFile = null, imgDir = null, pickFor = null, pending = null, tt;
+let newFile = null, imgDir = null, pickFor = null, pending = null, editId = null, curTab = 'orders', tt;
 
 /* TASK: Build the first menu with stock for every item.
    HOW: Loop over MENU, make one object per item with a unique id, 20 in stock and no photo (img ''). */
@@ -175,15 +175,14 @@ function renderManage() {
   const sales = S.orders.reduce((s, o) => s + o.total, 0), pend = S.orders.filter(o => o.status === 'Pending').length;
   const low = S.items.filter(i => i.stock <= 5).length;
   $('#stats').innerHTML = `<div><b>${S.orders.length}</b>orders</div><div><b>${peso(sales)}</b>sales</div><div><b>${pend}</b>pending</div><div><b>${low}</b>low or sold out</div>`;
+  $('#tc-orders').textContent = pend || ''; $('#tc-msgs').textContent = S.msgs.length || '';   // small number badges on the tabs
   $('#orders').innerHTML = S.orders.map(o => `<div class="order ${o.status === 'Served' ? 'done' : ''}"><div style="display:flex;justify-content:space-between;gap:1rem"><b>#${o.no} · ${esc(o.name)}</b><b>${peso(o.total)}</b></div>
     <small>${esc(o.time)}</small>${o.lines.map(l => `<div>${esc(l.text)}</div>`).join('')}
     <p style="margin:.6rem 0 0"><button class="ghost" data-act="status" data-no="${o.no}">${o.status === 'Pending' ? 'Mark as served' : 'Served (undo)'}</button></p></div>`).join('') || '<p>No orders yet.</p>';
   $('#inv').innerHTML = S.items.map(i => `<tr><td><img class="th ${i.img ? '' : 'def'}" src="${esc(imgOf(i))}" alt="" onerror="noImg(this)"></td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
     <td><input type="number" min="1" data-f="price" data-id="${i.id}" value="${i.p[0]}" aria-label="Price of ${esc(i.name)}"></td>
     <td><input type="number" min="0" data-f="stock" data-id="${i.id}" value="${i.stock}" aria-label="Stock of ${esc(i.name)}"></td>
-    <td><button class="ghost" data-act="photo" data-id="${i.id}">Photo</button>
-    <button class="ghost" data-act="edit" data-id="${i.id}">Edit</button>
-    <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
+    <td><button class="ghost" data-act="edit" data-id="${i.id}">Edit</button> <button class="ghost" data-act="photo" data-id="${i.id}">Photo</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
   $('#msgs').innerHTML = S.msgs.map(m => `<div class="order"><b>${esc(m.n)}</b> (${esc(m.e)})<br>${esc(m.m)}</div>`).join('') || '<p>No messages yet.</p>';
 }
 
@@ -269,23 +268,52 @@ async function savePhoto(file, it) {
 /* TASK: "Add a menu item" modal: open it, preview the photo, save the new item.
    HOW: openNew() clears the form and shows the dialog. Choosing a photo fills newFile. On submit build the item, save the photo to disk
    with savePhoto() (empty = shop logo), push the item, save(), close. */
-function openNew() { $('#addform').reset(); newFile = null; $('#pimg').src = LOGO; catChanged(); $('#ndlg').showModal(); }
-function openEdit(it) { $('#editform').reset(); newFile = null; $('#pimg').src = imgOf(it); catChanged(); $('#edlg').showModal(); }
+function openNew() {
+  editId = null; newFile = null; $('#addform').reset();
+  $('#ntitle').textContent = 'Add a menu item'; $('#nsave').textContent = 'Save item';
+  $('#pimg').src = LOGO; catChanged(); $('#ndlg').showModal();
+}
+/* TASK: "Edit" button: open the same modal with the item's current values filled in.
+   HOW: Remember the item id in editId, copy name/category/price/stock into the form fields, show the current photo. */
+function openEdit(id) {
+  const it = item(id); editId = id; newFile = null; $('#addform').reset();
+  $('#ntitle').textContent = 'Edit menu item'; $('#nsave').textContent = 'Save changes';
+  $('#an').value = it.name; $('#ac').value = it.cat; $('#ap').value = it.p[0]; $('#as').value = it.stock;
+  $('#pimg').onerror = function () { noImg(this); }; $('#pimg').src = imgOf(it);
+  catChanged(); $('#ndlg').showModal();
+}
 function catChanged() {
   const c = CATS[$('#ac').value];
-  $('#aplab').textContent = c.sizes ? 'Price (₱) for 8oz (12oz is ₱20 more)' : 'Price (₱)';
-  $('#pathhint').textContent = `Saved on your computer in images/${c.folder}/. Leave empty to use the shop logo.`;
+  $('#aplab').textContent = c.sizes ? 'Price (₱) for 8oz (12oz ' + (editId == null ? 'is ₱20 more)' : 'keeps its gap)') : 'Price (₱)';
+  $('#pathhint').textContent = editId == null ? `Saved on your computer in images/${c.folder}/. Leave empty to use the shop logo.`
+    : `Choose a new photo to replace it (saved in images/${c.folder}/), or leave empty to keep the current one.`;
 }
 on('#ac', 'change', catChanged);
 on('#pf', 'change', e => { newFile = e.target.files[0] || null; $('#pimg').src = newFile ? URL.createObjectURL(newFile) : LOGO; });
+/* TASK: Save the modal: a NEW item, or the changes to the item being edited.
+   HOW: editId is null when adding. When editing, copy the form values onto the existing item (it keeps its 8oz/12oz price gap).
+   If a new photo was chosen, savePhoto() puts it in the images folder. Then save(), close and redraw. */
 on('#addform', 'submit', async e => {
   e.preventDefault();
-  const c = $('#ac').value, price = +$('#ap').value;
-  const it = {id: S.nextId++, cat: c, name: $('#an').value.trim(), p: CATS[c].sizes ? [price, price + 20] : [price], stock: +$('#as').value, img: ''};
+  const c = $('#ac').value, price = +$('#ap').value, name = $('#an').value.trim(), stock = +$('#as').value;
+  let it = editId == null ? null : item(editId), msg = 'Menu item added';
+  if (it) {
+    const gap = it.p.length > 1 ? it.p[1] - it.p[0] : 20;
+    if (it.cat !== c) cart = cart.filter(l => l.id !== it.id);   // old size/add-on choices don't fit a new category
+    Object.assign(it, {name, cat: c, stock, p: CATS[c].sizes ? [price, price + gap] : [price]}); msg = 'Item updated';
+  } else { it = {id: S.nextId++, cat: c, name, p: CATS[c].sizes ? [price, price + 20] : [price], stock, img: ''}; S.items.push(it); }
   if (newFile) it.img = await savePhoto(newFile, it);
-  S.items.push(it); save(); $('#ndlg').close(); renderManage(); renderMenu(); renderHero();
-  if (!newFile) toast('Menu item added');
+  save(); $('#ndlg').close(); renderManage(); renderMenu(); renderHero(); renderCart();
+  if (!newFile) toast(msg);
 });
+
+/* TASK: Show one Manage tab (Orders, Menu and Stocks, Messages) and hide the others.
+   HOW: Give class "on" to the clicked tab button, then hide every .panel except the one whose id is "tab-<name>" using the hidden property. */
+function showTab(t) {
+  curTab = t;
+  document.querySelectorAll('#mtabs button').forEach(b => b.classList.toggle('on', b.dataset.v === t));
+  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== 'tab-' + t);
+}
 
 /* TASK: Change the photo of an item already on the menu.
    HOW: The "Photo" button remembers the item id (pickFor) and clicks a hidden file input; when a file is chosen, savePhoto() it and store the path on the item. */
@@ -315,11 +343,12 @@ const acts = {
   prev: () => $('#items').scrollBy({left: -460, behavior: 'smooth'}),
   next: () => $('#items').scrollBy({left: 460, behavior: 'smooth'}),
   newitem: openNew,
+  edit: b => openEdit(+b.dataset.id),
+  tab: b => showTab(b.dataset.v),
   linkdir: linkFolder,
   closen: () => $('#ndlg').close(),
   photo: b => { pickFor = +b.dataset.id; $('#rowpick').click(); },
   status: b => { const o = S.orders.find(o => o.no === +b.dataset.no); o.status = o.status === 'Pending' ? 'Served' : 'Pending'; save(); renderManage(); renderHero(); },
-  edit: b => { const it = item(+b.dataset.id); $('#an').value = it.name; $('#ac').value = it.cat; $('#ap').value = it.p[0]; $('#as').value = it.stock; newFile = null; $('#pimg').src = imgOf(it); catChanged(); pending = it.id; $('#edlg').showModal(); },
   del: b => { const it = item(+b.dataset.id); if (!confirm('Remove ' + it.name + ' from the menu?')) return; S.items = S.items.filter(i => i !== it); cart = cart.filter(l => l.id !== it.id); save(); renderManage(); renderMenu(); renderCart(); renderHero(); },
   reset: () => { if (!confirm('Delete all orders, messages, photos and stock changes?')) return; S = seed(); cart = []; save(); renderMenu(); renderCart(); renderHero(); renderManage(); toast('Data reset. Click Link my images folder to relink your pictures.'); }
 };
