@@ -1,8 +1,8 @@
-/* NEWLAND'S CAFE: menu + ordering + stock + item photos. HTML/CSS/JS only. We save the data in this browser (localStorage).
+/* NEWLAND'S CAFE: menu + ordering + stock + item photos. HTML/CSS/JS only. Data is saved in this browser (localStorage).
    Each function has a TASK (what it must do) and HOW (a beginner-friendly way to do it) comment for teammates. */
 
 const KEY = 'newlands-v1';
-const LOGO = 'images/logo.png.png';          // default picture for any item without its own photo (replace the file with the real logo)
+const LOGO = 'images/logo.png';   // the shop logo: shown when an item's picture is not found
 const $ = s => document.querySelector(s);
 const on = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };   // add a listener only if this page has that element
 const peso = n => '₱' + n.toLocaleString();
@@ -29,9 +29,10 @@ const MENU = {
 };
 
 let S = load() || seed();   // S = the whole saved state: items, orders, msgs, counters
+S.items.forEach(i => { if (i.img) i.img = i.img.startsWith('data:') ? '' : i.img.split('/').pop(); });   // older versions saved a path or photo: keep only a file name
 let cart = [];              // cart lines: {id, size, add:[add-on indexes], qty}
 let curCat = 'hot';
-let newFile = null, imgDir = null, pickFor = null, pending = null, editId = null, curTab = 'orders', tt;
+let pending = null, editId = null, curTab = 'orders', tt;
 
 /* TASK: Build the first menu with stock for every item.
    HOW: Loop over MENU, make one object per item with a unique id, 20 in stock and no photo (img ''). */
@@ -51,8 +52,6 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(tt); tt = setTimeout(() => t.style.display = 'none', 2500); }
 
 const item = id => S.items.find(i => i.id === id);
-const imgOf = i => !i.img ? LOGO : i.img.startsWith('data:') ? i.img : encodeURI(i.img);   // photo path of the item, or the shop logo
-function noImg(im) { im.onerror = null; im.src = LOGO; im.classList.add('def'); }            // picture file not found: show the logo
 const inCart = id => cart.filter(l => l.id === id).reduce((s, l) => s + l.qty, 0);
 
 /* TASK: Keep My Order when the customer goes from one page to another.
@@ -93,7 +92,7 @@ function renderMenu() {
   $('#items').innerHTML = S.items.filter(i => i.cat === curCat).map(i => {
     const out = i.stock <= 0, left = i.stock - inCart(i.id);
     const tag = out ? 'Sold out' : i.stock <= 5 ? i.stock + ' left' : '';
-    return `<article class="card ${out ? 'out' : ''}"><img src="${esc(imgOf(i))}" alt="${esc(i.name)}" class="${i.img ? '' : 'def'}" onerror="noImg(this)">
+    return `<article class="card ${out ? 'out' : ''}"><img src="${esc(picList(i)[0])}" data-id="${i.id}" data-n="0" alt="${esc(i.name)}" onerror="nextPic(this)">
       ${tag ? `<span class="badge">${tag}</span>` : ''}
       <div class="glass"><small>${CATS[i.cat].label}</small><h4>${esc(i.name)}</h4><span>${i.p.map(peso).join(' / ')}</span>
       <button class="plus" data-act="add" data-id="${i.id}" aria-label="Add ${esc(i.name)}" ${left <= 0 ? 'disabled' : ''}>+</button></div></article>`;
@@ -179,10 +178,10 @@ function renderManage() {
   $('#orders').innerHTML = S.orders.map(o => `<div class="order ${o.status === 'Served' ? 'done' : ''}"><div style="display:flex;justify-content:space-between;gap:1rem"><b>#${o.no} · ${esc(o.name)}</b><b>${peso(o.total)}</b></div>
     <small>${esc(o.time)}</small>${o.lines.map(l => `<div>${esc(l.text)}</div>`).join('')}
     <p style="margin:.6rem 0 0"><button class="ghost" data-act="status" data-no="${o.no}">${o.status === 'Pending' ? 'Mark as served' : 'Served (undo)'}</button></p></div>`).join('') || '<p>No orders yet.</p>';
-  $('#inv').innerHTML = S.items.map(i => `<tr><td><img class="th ${i.img ? '' : 'def'}" src="${esc(imgOf(i))}" alt="" onerror="noImg(this)"></td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
+  $('#inv').innerHTML = S.items.map(i => `<tr><td><img class="th" src="${esc(picList(i)[0])}" data-id="${i.id}" data-n="0" alt="" onerror="nextPic(this)"></td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
     <td><input type="number" min="1" data-f="price" data-id="${i.id}" value="${i.p[0]}" aria-label="Price of ${esc(i.name)}"></td>
     <td><input type="number" min="0" data-f="stock" data-id="${i.id}" value="${i.stock}" aria-label="Stock of ${esc(i.name)}"></td>
-    <td><button class="ghost" data-act="edit" data-id="${i.id}">Edit</button> <button class="ghost" data-act="photo" data-id="${i.id}">Photo</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
+    <td><button class="ghost" data-act="edit" data-id="${i.id}">Edit</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
   $('#msgs').innerHTML = S.msgs.map(m => `<div class="order"><b>${esc(m.n)}</b> (${esc(m.e)})<br>${esc(m.m)}</div>`).join('') || '<p>No messages yet.</p>';
 }
 
@@ -195,116 +194,66 @@ function editField(el) {
   save(); renderManage(); renderMenu(); renderHero();
 }
 
-/* TASK: Link the pictures you already have in your computer's images folder to the menu items.
-   HOW: A web page can't read your folders by itself, so you pick the "images" folder once. We list every picture inside it
-   (images/<group folder>/<picture>), then matchImages() pairs each picture with the item whose name is closest. Only the path text is saved. */
-const IMG = /\.(jpe?g|png|webp|gif|avif)$/i;
-const norm = s => s.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]/g, '');   // "Iced Matcha.jpg" -> "icedmatcha"
-
-// Ask for the images folder (Chrome/Edge). Kept until the page is reloaded; it also lets us SAVE new pictures there.
-async function getRoot() {
-  if (imgDir) return imgDir;
-  const d = await showDirectoryPicker({mode: 'readwrite'});
-  return imgDir = d.name.toLowerCase() === 'images' ? d : await d.getDirectoryHandle('images', {create: true});
+/* TASK: Find the picture of each menu item inside your images folder.
+   HOW: Every category has a folder (CATS[...].folder), so a picture lives at images/<folder>/<item name>.jpg in lowercase,
+   e.g. images/iced collections/iced matcha latte.jpg. picList() lists the paths to try, best guess first: the file name typed in Edit (if any),
+   the full item name, then the name without a last word like latte/frappe/fizz ("iced matcha"). Each name is tried as .jpg, .png, .jpeg and .webp.
+   The <img> calls nextPic() each time a file is not found; when nothing is found the shop logo is shown. */
+const EXTS = ['jpg', 'png', 'jpeg', 'webp'];
+function picList(it) {
+  const dir = 'images/' + CATS[it.cat].folder + '/', full = it.name.toLowerCase().trim();
+  const names = [...new Set([(it.img || '').trim(), full, full.replace(/ (latte|frappe|fizz)$/, '')].filter(Boolean))];
+  return names.flatMap(n => (/\.[a-z0-9]{3,4}$/i.test(n) ? [n] : EXTS.map(x => n + '.' + x))).map(f => encodeURI(dir + f));
 }
-// List every picture in a folder and its sub-folders: {rel: 'images/hot collections/latte.jpg', folder: 'hot collections', base: 'latte'}
-async function walk(dir, path, out) {
-  for await (const [name, h] of dir.entries()) {
-    if (h.kind === 'directory') await walk(h, path + '/' + name, out);
-    else if (IMG.test(name)) out.push({rel: path + '/' + name, folder: path.split('/').pop().toLowerCase(), base: norm(name)});
-  }
-}
-async function linkFolder() {
-  if (!window.showDirectoryPicker) return $('#dirpick').click();   // Firefox/Safari: read-only folder picker (see below)
-  try { const out = []; await walk(await getRoot(), 'images', out); matchImages(out); }
-  catch (e) { if (e.name !== 'AbortError') toast('Could not open that folder'); }
-}
-on('#dirpick', 'change', e => {
-  const out = [...e.target.files].filter(f => IMG.test(f.name)).map(f => {
-    const p = f.webkitRelativePath.split('/'), k = p.findIndex(x => x.toLowerCase() === 'images');
-    return {rel: k >= 0 ? p.slice(k).join('/') : 'images/' + p.slice(1).join('/'), folder: (p[p.length - 2] || '').toLowerCase(), base: norm(f.name)};
-  });
-  e.target.value = ''; matchImages(out);
-});
-
-/* TASK: Pair each menu item with the picture whose file name is closest to the item name.
-   HOW: Compare names using only letters and numbers, so "iced matcha.jpg" matches "Iced Matcha Latte". Exact name = 3 points,
-   partial name (only inside the item's own group folder) = 2, +1 when the picture is in the group folder. The best score wins. */
-function matchImages(list) {
-  let n = 0;
-  for (const it of S.items) {
-    const nm = norm(it.name), key = it.cat.slice(0, 4); let best = null, bs = 0;
-    for (const f of list) {
-      const ok = f.folder.includes(key);
-      const s0 = f.base === nm ? 3 : ok && f.base.length >= 4 && (nm.includes(f.base) || f.base.includes(nm)) ? 2 : 0;
-      if (!s0) continue;
-      const sc = s0 + (ok ? 1 : 0);
-      if (sc > bs || (sc === bs && best && f.base.length > best.base.length)) { bs = sc; best = f; }
-    }
-    if (best) { it.img = best.rel; n++; }
-  }
-  save(); renderMenu(); renderManage();
-  toast(`Linked ${n} of ${S.items.length} items to your pictures`);
+function nextPic(im) {
+  const list = picList(item(+im.dataset.id)), n = +im.dataset.n + 1;
+  if (n < list.length) { im.dataset.n = n; im.src = list[n]; }
+  else { im.onerror = null; im.src = LOGO; im.classList.add('def'); }
 }
 
-/* TASK: Save a picture you chose into your computer's images folder, inside the item's group folder.
-   HOW: With a linked folder (Chrome/Edge) the file is written to images/<group>/<item name>.<ext>. Other browsers can't write to disk,
-   so the file is downloaded and you move it into that folder yourself. Returns the path text to remember. */
-async function savePhoto(file, it) {
-  const c = CATS[it.cat], ext = (file.name.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0].toLowerCase();
-  const fname = it.name.toLowerCase().replace(/[\\/:*?"<>|]/g, '') + ext;
-  try {
-    if (!window.showDirectoryPicker) throw 0;
-    const dir = await (await getRoot()).getDirectoryHandle(c.folder, {create: true});
-    const w = await (await dir.getFileHandle(fname, {create: true})).createWritable();
-    await w.write(file); await w.close(); toast(`Saved to images/${c.folder}/${fname}`);
-  } catch (e) {
-    const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = fname; a.click();
-    toast(`Downloaded ${fname}. Move it into images/${c.folder}/`);
-  }
-  return `images/${c.folder}/${fname}`;
+/* TASK: "Add a menu item" / "Edit" modal: open it, preview the picture, save.
+   HOW: editId is null when adding and the item's id when editing. openEdit() copies the item's values into the form fields.
+   The "Picture file name" box is optional: empty = the item name is used. showPreview() tries the same names as the menu does. */
+function showPreview() {
+  const im = $('#pimg'), t = {name: $('#an').value, cat: $('#ac').value, img: $('#pf').value};
+  if (!t.name.trim() && !t.img.trim()) { im.onerror = null; im.src = LOGO; return; }
+  const list = picList(t); let n = 0;
+  im.onerror = () => { n++; if (n < list.length) im.src = list[n]; else { im.onerror = null; im.src = LOGO; } };
+  im.src = list[0];
 }
-
-/* TASK: "Add a menu item" modal: open it, preview the photo, save the new item.
-   HOW: openNew() clears the form and shows the dialog. Choosing a photo fills newFile. On submit build the item, save the photo to disk
-   with savePhoto() (empty = shop logo), push the item, save(), close. */
 function openNew() {
-  editId = null; newFile = null; $('#addform').reset();
+  editId = null; $('#addform').reset();
   $('#ntitle').textContent = 'Add a menu item'; $('#nsave').textContent = 'Save item';
-  $('#pimg').src = LOGO; catChanged(); $('#ndlg').showModal();
+  catChanged(); showPreview(); $('#ndlg').showModal();
 }
-/* TASK: "Edit" button: open the same modal with the item's current values filled in.
-   HOW: Remember the item id in editId, copy name/category/price/stock into the form fields, show the current photo. */
 function openEdit(id) {
-  const it = item(id); editId = id; newFile = null; $('#addform').reset();
+  const it = item(id); editId = id; $('#addform').reset();
   $('#ntitle').textContent = 'Edit menu item'; $('#nsave').textContent = 'Save changes';
-  $('#an').value = it.name; $('#ac').value = it.cat; $('#ap').value = it.p[0]; $('#as').value = it.stock;
-  $('#pimg').onerror = function () { noImg(this); }; $('#pimg').src = imgOf(it);
-  catChanged(); $('#ndlg').showModal();
+  $('#an').value = it.name; $('#ac').value = it.cat; $('#ap').value = it.p[0]; $('#as').value = it.stock; $('#pf').value = it.img || '';
+  catChanged(); showPreview(); $('#ndlg').showModal();
 }
 function catChanged() {
   const c = CATS[$('#ac').value];
   $('#aplab').textContent = c.sizes ? 'Price (₱) for 8oz (12oz ' + (editId == null ? 'is ₱20 more)' : 'keeps its gap)') : 'Price (₱)';
-  $('#pathhint').textContent = editId == null ? `Saved on your computer in images/${c.folder}/. Leave empty to use the shop logo.`
-    : `Choose a new photo to replace it (saved in images/${c.folder}/), or leave empty to keep the current one.`;
+  $('#pathhint').textContent = `Put the picture file in images/${c.folder}/. Leave this empty to use the item name (e.g. latte.jpg).`;
 }
-on('#ac', 'change', catChanged);
-on('#pf', 'change', e => { newFile = e.target.files[0] || null; $('#pimg').src = newFile ? URL.createObjectURL(newFile) : LOGO; });
+on('#ac', 'change', () => { catChanged(); showPreview(); });
+on('#an', 'input', showPreview);
+on('#pf', 'input', showPreview);
+
 /* TASK: Save the modal: a NEW item, or the changes to the item being edited.
-   HOW: editId is null when adding. When editing, copy the form values onto the existing item (it keeps its 8oz/12oz price gap).
-   If a new photo was chosen, savePhoto() puts it in the images folder. Then save(), close and redraw. */
-on('#addform', 'submit', async e => {
+   HOW: When editing, copy the form values onto the existing item (it keeps its 8oz/12oz price gap); when adding, push a new item.
+   The picture is not copied anywhere: only the file name is stored, and the page looks for it in the images folder. Then save(), close, redraw. */
+on('#addform', 'submit', e => {
   e.preventDefault();
-  const c = $('#ac').value, price = +$('#ap').value, name = $('#an').value.trim(), stock = +$('#as').value;
+  const c = $('#ac').value, price = +$('#ap').value, name = $('#an').value.trim(), stock = +$('#as').value, img = $('#pf').value.trim();
   let it = editId == null ? null : item(editId), msg = 'Menu item added';
   if (it) {
     const gap = it.p.length > 1 ? it.p[1] - it.p[0] : 20;
     if (it.cat !== c) cart = cart.filter(l => l.id !== it.id);   // old size/add-on choices don't fit a new category
-    Object.assign(it, {name, cat: c, stock, p: CATS[c].sizes ? [price, price + gap] : [price]}); msg = 'Item updated';
-  } else { it = {id: S.nextId++, cat: c, name, p: CATS[c].sizes ? [price, price + 20] : [price], stock, img: ''}; S.items.push(it); }
-  if (newFile) it.img = await savePhoto(newFile, it);
-  save(); $('#ndlg').close(); renderManage(); renderMenu(); renderHero(); renderCart();
-  if (!newFile) toast(msg);
+    Object.assign(it, {name, cat: c, stock, img, p: CATS[c].sizes ? [price, price + gap] : [price]}); msg = 'Item updated';
+  } else { S.items.push({id: S.nextId++, cat: c, name, p: CATS[c].sizes ? [price, price + 20] : [price], stock, img}); }
+  save(); $('#ndlg').close(); renderManage(); renderMenu(); renderHero(); renderCart(); toast(msg);
 });
 
 /* TASK: Show one Manage tab (Orders, Menu and Stocks, Messages) and hide the others.
@@ -314,13 +263,6 @@ function showTab(t) {
   document.querySelectorAll('#mtabs button').forEach(b => b.classList.toggle('on', b.dataset.v === t));
   document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== 'tab-' + t);
 }
-
-/* TASK: Change the photo of an item already on the menu.
-   HOW: The "Photo" button remembers the item id (pickFor) and clicks a hidden file input; when a file is chosen, savePhoto() it and store the path on the item. */
-on('#rowpick', 'change', async e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f || pickFor == null) return;
-  const it = item(pickFor); it.img = await savePhoto(f, it); save(); renderManage(); renderMenu();
-});
 
 /* TASK: Save the Contact Us form so staff can read it in Manage.
    HOW: Push {n, e, m} into S.msgs, save(), clear the form and confirm with toast(). */
@@ -345,15 +287,60 @@ const acts = {
   newitem: openNew,
   edit: b => openEdit(+b.dataset.id),
   tab: b => showTab(b.dataset.v),
-  linkdir: linkFolder,
+  changepin: () => showGate('create'),
+  gcancel: () => openManage(),
+  lock: () => { setUnlocked(false); location.reload(); },
   closen: () => $('#ndlg').close(),
-  photo: b => { pickFor = +b.dataset.id; $('#rowpick').click(); },
   status: b => { const o = S.orders.find(o => o.no === +b.dataset.no); o.status = o.status === 'Pending' ? 'Served' : 'Pending'; save(); renderManage(); renderHero(); },
   del: b => { const it = item(+b.dataset.id); if (!confirm('Remove ' + it.name + ' from the menu?')) return; S.items = S.items.filter(i => i !== it); cart = cart.filter(l => l.id !== it.id); save(); renderManage(); renderMenu(); renderCart(); renderHero(); },
-  reset: () => { if (!confirm('Delete all orders, messages, photos and stock changes?')) return; S = seed(); cart = []; save(); renderMenu(); renderCart(); renderHero(); renderManage(); toast('Data reset. Click Link my images folder to relink your pictures.'); }
+  reset: () => { if (!confirm('Delete all orders, messages, photos and stock changes?')) return; S = seed(); cart = []; save(); renderMenu(); renderCart(); renderHero(); renderManage(); toast('Data reset'); }
 };
 document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && acts[b.dataset.act]) acts[b.dataset.act](b); });
 document.addEventListener('change', e => { if (e.target.dataset.f) editField(e.target); });
+
+/* TASK: Ask for a PIN before the Manage page opens.
+   HOW: The Manage content starts hidden and a PIN form (#gate) is shown. The first time there is no PIN yet, so the form asks the staff to CREATE one
+   (4 to 6 digits, typed twice). After that it asks for the PIN. We save only a scrambled version (hashPin), never the PIN itself.
+   Once the right PIN is typed, sessionStorage remembers it for this browser tab only; leaving Manage (or pressing Lock) asks again.
+   NOTE: this is simple protection for a school project. A web page with no server cannot keep a PIN truly secret. */
+const PIN_KEY = 'newlands-pin', UNLOCK = 'newlands-unlocked';
+let gateMode = '', fails = 0, lockUntil = 0;
+function hashPin(p) { let h = 5381; for (const ch of 'newlands:' + p) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0; return String(h); }
+function getPin() { try { return localStorage.getItem(PIN_KEY); } catch (e) { return null; } }
+function setUnlocked(yes) { try { yes ? sessionStorage.setItem(UNLOCK, '1') : sessionStorage.removeItem(UNLOCK); } catch (e) {} }
+function isUnlocked() { try { return sessionStorage.getItem(UNLOCK) === '1'; } catch (e) { return false; } }
+
+// Show the PIN form. mode 'enter' = ask for the PIN, 'create' = choose a new PIN (also used by "Change PIN").
+function showGate(mode) {
+  gateMode = mode;
+  $('#manage').hidden = true; $('#gate').hidden = false;
+  $('#gtitle').textContent = mode === 'enter' ? 'Staff only' : (getPin() ? 'Change PIN' : 'Create a PIN');
+  $('#gtext').textContent = mode === 'enter' ? 'Enter your PIN to open Manage.' : 'Choose a 4 to 6 digit PIN. You will be asked for it every time you open Manage.';
+  $('#pin2wrap').hidden = mode === 'enter'; $('#gpin2').required = mode === 'create';
+  $('#gcancel').hidden = !(mode === 'create' && getPin());
+  $('#gok').textContent = mode === 'enter' ? 'Unlock' : 'Save PIN';
+  $('#gpin').value = ''; $('#gpin2').value = ''; $('#gerr').textContent = ''; $('#gpin').focus();
+}
+function openManage() { setUnlocked(true); $('#gate').hidden = true; $('#manage').hidden = false; renderManage(); }
+
+/* TASK: Check what was typed in the PIN form.
+   HOW: In 'enter' mode compare hashPin(typed) with the saved one; 5 wrong tries in a row pause the form for 30 seconds.
+   In 'create' mode check it is 4 to 6 digits and that both boxes match, then save it and open Manage. */
+on('#gform', 'submit', e => {
+  e.preventDefault();
+  const pin = $('#gpin').value, err = t => $('#gerr').textContent = t;
+  if (gateMode === 'enter') {
+    if (Date.now() < lockUntil) return err('Too many wrong tries. Wait ' + Math.ceil((lockUntil - Date.now()) / 1000) + ' seconds.');
+    if (hashPin(pin) === getPin()) { fails = 0; return openManage(); }
+    $('#gpin').value = '';
+    if (++fails >= 5) { fails = 0; lockUntil = Date.now() + 30000; return err('Too many wrong tries. Wait 30 seconds.'); }
+    return err('Wrong PIN. Try again.');
+  }
+  if (!/^\d{4,6}$/.test(pin)) return err('The PIN must be 4 to 6 digits (numbers only).');
+  if (pin !== $('#gpin2').value) return err('The two PINs do not match.');
+  try { localStorage.setItem(PIN_KEY, hashPin(pin)); } catch (x) { return err('Could not save the PIN in this browser.'); }
+  toast('PIN saved'); openManage();
+});
 
 /* TASK: Start the page: add the shared parts, load the saved cart, and draw whatever this page has.
    HOW: Each render function quietly does nothing when its part is not on this page. The nav is see-through only on Home (data-page="home"). */
@@ -364,3 +351,8 @@ if (document.body.dataset.page === 'home') {
   const solidNav = () => $('#nav').classList.toggle('solid', scrollY > 40);
   addEventListener('scroll', solidNav, {passive: true}); solidNav();
 }
+
+/* TASK: Decide if the Manage page may open.
+   HOW: Only on manage.html. Already unlocked in this tab = open; otherwise show the PIN form. On every other page, forget the unlock. */
+if (document.body.dataset.page === 'manage') { if (isUnlocked() && getPin()) openManage(); else showGate(getPin() ? 'enter' : 'create'); }
+else setUnlocked(false);
