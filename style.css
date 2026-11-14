@@ -132,7 +132,7 @@ button,input,select,textarea{
         url(images/hero.jpg.jpg) center/cover,#5a3414
     }
 .eyebrow{
-    font:.85rem var(--mono);
+    font:2.5rem var(--mono);
     letter-spacing:.06em;
     text-transform:uppercase;
     margin:0 0 .6rem
@@ -455,16 +455,17 @@ button,input,select,textarea{
 #contact .detail{
     display:flex;
     flex-wrap:wrap;
-    gap:2rem
+    gap:5rem
 }
 #contact form{
-    max-width:460px
+    width:100%;
+    max-width:800px
 }
 #contact input,
 #contact textarea{
     background:rgba(255,255,255,.08);
     border-color:rgba(255,255,255,.35);
-    color:#fff
+    color:#fff;
 }
 #contact input:focus,#contact textarea:focus{
     background:rgba(255,255,255,.15);

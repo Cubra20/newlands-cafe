@@ -22,19 +22,25 @@
     <p id="gtext"></p>
     <label for="gpin">PIN</label>
     <input id="gpin" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autocomplete="off">
-    <div id="pin2wrap" hidden><label for="gpin2">Confirm PIN</label><input id="gpin2" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"></div>
+    <div id="pin2wrap" hidden>
+      <label for="gpin2">Confirm PIN</label>
+      <input id="gpin2" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
+    </div>
     <p class="err" id="gerr" role="alert"></p>
     <p><button class="pill dark wide" id="gok">Continue</button></p>
-    <p><button type="button" class="ghost" id="gcancel" data-act="gcancel" hidden>Cancel</button> <a href="index.html">Back to Home</a></p>
-    <small>Forgot your PIN? In your browser's developer tools (Application, then Local Storage) delete the item named newlands-pin for this page.</small>
+    <p><button type="button" class="ghost" id="gcancel" data-act="gcancel" hidden>Cancel</button> 
+      <a href="index.html">Back to Home</a></p>
   </form>
 </section>
 
 <main id="manage" hidden>
   <div class="mwrap">
-    <p class="eyebrow gold">Staff only</p><h2>Manage</h2>
+    <p class="eyebrow gold">Staff only</p>
+    <h2>Manage</h2>
     <div class="mstats" id="stats"></div>
-    <p><button class="ghost" data-act="changepin">Change PIN</button> <button class="ghost" data-act="lock">Lock</button> <button class="ghost" data-act="reset">Reset all data</button></p>
+    <p><button class="ghost" data-act="changepin">Change PIN</button> 
+      <button class="ghost" data-act="lock">Lock</button> 
+      <button class="ghost" data-act="reset">Reset all data</button></p>
     <div class="mtabs" id="mtabs" role="tablist">
       <button role="tab" data-act="tab" data-v="orders" class="on">Orders <b id="tc-orders"></b></button>
       <button role="tab" data-act="tab" data-v="menu">Menu and Stocks</button>
@@ -51,13 +57,31 @@
 </main>
 
 
-<dialog id="ndlg"><form id="addform"><h3 id="ntitle">Add a menu item</h3>
-  <div class="prev"><img id="pimg" src="images/logo.png" alt="Item picture preview"><div><label for="pf">Picture file name (optional)</label><input id="pf" placeholder="e.g. iced matcha.jpg" maxlength="80"><small id="pathhint"></small></div></div>
-  <label for="an">Name</label><input id="an" required maxlength="40">
-  <label for="ac">Category</label><select id="ac"></select>
-  <label for="ap" id="aplab">Price (₱)</label><input id="ap" type="number" min="1" required>
-  <label for="as">Starting stock</label><input id="as" type="number" min="0" value="20" required>
-  <div class="acts"><button type="button" class="ghost" data-act="closen">Cancel</button><button class="pill dark" id="nsave">Save item</button></div></form></dialog>
+<dialog id="ndlg">
+  <form id="addform">
+    <h3 id="ntitle">Add a menu item</h3>
+  <div class="prev">
+    <img id="pimg" src="images/logo.png" alt="Item picture preview">
+    <div>
+      <label for="pf">Picture file name (optional)</label>
+      <input id="pf" placeholder="e.g. iced matcha.jpg" maxlength="80">
+      <small id="pathhint"></small>
+    </div>
+  </div>
+  <label for="an">Name</label>
+  <input id="an" required maxlength="40">
+  <label for="ac">Category</label>
+  <select id="ac"></select>
+  <label for="ap" id="aplab">Price (₱)</label>
+  <input id="ap" type="number" min="1" required>
+  <label for="as">Starting stock</label>
+  <input id="as" type="number" min="0" value="20" required>
+  <div class="acts">
+    <button type="button" class="ghost" data-act="closen">Cancel</button>
+    <button class="pill dark" id="nsave">Save item</button>
+  </div>
+</form>
+</dialog>
 <script src="script.js"></script>
 </body>
 </html>
