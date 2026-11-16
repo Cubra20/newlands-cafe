@@ -1,4 +1,11 @@
-/* NEWLAND'S CAFE styles. Theme: warm orange hero, sand menu, brown + mustard accents, serif headings, mono body text. */
+/* NEWLAND'S CAFE: style.css
+   Arranged per page: 1-6 are SHARED by every page, then one section per page (7 Home, 8 Menu, 9 Story, 10 Contact, 11 Manage).
+   Each section ends with its own phone-size rules (@media max-width:760px). */
+
+/* ==========================================================================
+   1. BASE (every page)
+   Colors and fonts are CSS variables in :root: change the theme there.
+   ========================================================================== */
 :root{
     --sand:#d8d0c2;
     --paper:#efe9dd;
@@ -10,50 +17,49 @@
     --line:#c4b8a5;
     --warn:#a63a2a;
     --serif:"Instrument Serif",Georgia,serif;
-    --mono:"DM Mono",ui-monospace,Consolas,monospace
+    --mono:"DM Mono",ui-monospace,Consolas,monospace;
 }
 *,*::before,*::after{
-    box-sizing:border-box
+    box-sizing:border-box;
 }
 html{
-    scroll-padding-top:4.5rem
+    font-family:var(--mono);
 }
 @media(prefers-reduced-motion:no-preference){
     html{
-        scroll-behavior:smooth
+        scroll-behavior:smooth;
     }
 }
 body{
-    margin:0;background:var(--sand);
+    margin:0;
+    background:var(--sand);
     color:var(--ink);
-    font:16px/1.5 Inter,system-ui,sans-serif
+    font:16px/1.5 Inter,system-ui,sans-serif;
 }
 h1,h2,h3,h4{
     font-family:var(--serif);
-    font-weight:400;margin:0
+    font-weight:400;
+    margin:0;
 }
 button,input,select,textarea{
     font:inherit;
-    color:inherit
+    color:inherit;
 }
 :focus-visible{
     outline:3px solid var(--gold);
-    outline-offset:2px
+    outline-offset:2px;
 }
 [hidden]{
-    display:none!important
+    display:none!important;
+}
+small{
+    color:#6b5a4a;
 }
 
-/* Layout */
-.container{max-width:1200px;margin:0 auto}
-.grid{display:grid;gap:2rem}
-.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
-.grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}
-
-/* Top bar: see-through over the hero, solid brown after scrolling (class "solid" is added by script.js) */
+/* ==========================================================================
+   2. SHARED: top bar (nav)
+   On Home it is see-through over the photo; other pages use .solid (added in the HTML, or by script.js after scrolling).
+   ========================================================================== */
 .nav{
     position:fixed;
     inset:0 0 auto;
@@ -61,41 +67,43 @@ button,input,select,textarea{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:1rem;padding:.6rem 2rem;
-    color:#fff;background:rgba(60,35,15,.3);
+    gap:1rem;
+    padding:.6rem 2rem;
+    color:#fff;
+    background:rgba(60,35,15,.3);
     backdrop-filter:blur(10px);
     border-bottom:1px solid rgba(255,255,255,.25);
-    transition:background .3s
+    transition:background .3s;
 }
-
 .nav.solid{
-    background:var(--dark)
+    background:var(--dark);
 }
 .brand{
     display:flex;
     align-items:center;
-    gap:.8rem;color:inherit;
+    gap:.8rem;
+    color:inherit;
     text-decoration:none;
-    font:1.9rem/1 var(--serif)
+    font:1.9rem/1 var(--serif);
 }
 .brand img{
     height:46px;
-    border-radius:8px
+    border-radius:8px;
 }
 .links{
     display:flex;
     gap:2.2rem;
     font-family:var(--serif);
-    font-size:1.15rem
+    font-size:1.15rem;
 }
 .links a{
     color:inherit;
     text-decoration:none;
     padding:.2rem 0;
-    border-bottom:1px solid transparent
+    border-bottom:1px solid transparent;
 }
 .links a.on,.links a:hover{
-    border-color:var(--gold)
+    border-color:var(--gold);
 }
 .orderbtn{
     background:none;
@@ -105,7 +113,7 @@ button,input,select,textarea{
     padding:.4rem 1rem;
     font-family:var(--serif);
     font-size:1.15rem;
-    cursor:pointer
+    cursor:pointer;
 }
 .orderbtn b{
     background:var(--gold);
@@ -113,32 +121,38 @@ button,input,select,textarea{
     border-radius:99px;
     padding:0 .5rem;
     margin-left:.3rem;
-    font:500 .85rem var(--mono)
+    font:500 .85rem var(--mono);
 }
 .orderbtn:hover{
-    border-color:var(--gold)
+    border-color:var(--gold);
 }
 
-/* Hero */
-.hero{
-    position:relative;
-    padding:8rem 2rem 3rem 6vw;
-    color:#fff;display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    justify-content:center;
-    background:linear-gradient(
-        90deg,rgba(226,128,36,.92),rgba(150,80,30,.55) 45%,rgba(30,18,10,.25)),
-        url(images/hero.jpg.jpg) center/cover,#5a3414
+/* phone size */
+@media(max-width:760px){
+    .nav{
+        flex-wrap:wrap;
+        padding:.6rem 1rem;
     }
+    .links{
+        order:3;
+        width:100%;
+        gap:1.2rem;
+        overflow-x:auto;
+    }
+}
+
+/* ==========================================================================
+   3. SHARED: buttons and small text
+   .pill = big rounded button, .ghost = small outline button.
+   ========================================================================== */
 .eyebrow{
     font:2.5rem var(--mono);
     letter-spacing:.06em;
     text-transform:uppercase;
-    margin:0 0 .6rem
+    margin:0 0 .6rem;
 }
 .gold{
-    color:var(--gold)
+    color:var(--gold);
 }
 .pill{
     display:inline-block;
@@ -148,91 +162,248 @@ button,input,select,textarea{
     border-radius:99px;
     padding:.75rem 1.6rem;
     cursor:pointer;
-    text-decoration:none
+    text-decoration:none;
 }
 .pill.dark{
     background:var(--dark);
-    border-color:var(--dark)
+    border-color:var(--dark);
 }
 .pill.gold{
     background:var(--gold);
     border-color:var(--gold);
     color:var(--dark);
-    font-weight:500
+    font-weight:500;
 }
 .pill.out{
     background:none;
     border-color:var(--brown);
     color:var(--brown);
-    font-family:var(--mono)
+    font-family:var(--mono);
 }
 .pill.wide{
-    width:100%
-}
-.pill:disabled{
-    opacity:.4
+    width:100%;
 }
 .ghost{
     background:none;
     border:1px solid var(--line);
     border-radius:99px;
     padding:.35rem .9rem;
-    cursor:pointer
+    cursor:pointer;
 }
 
-/* Home */
+/* ==========================================================================
+   4. SHARED: forms and dialogs (pop-ups)
+   Used by the Menu size/add-ons dialog, the Manage modal, the My Order drawer and the Contact form.
+   ========================================================================== */
+label{
+    display:block;
+    margin:.7rem 0 .2rem;
+    font-weight:500;
+}
+input,select,textarea{
+    width:100%;
+    padding:.55rem .7rem;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fbf8f2;
+}
+input:focus,select:focus,textarea:focus{
+    border-color:var(--brown);
+}
+input[type=radio],input[type=checkbox]{
+    width:auto;
+    margin-right:.5rem;
+}
+dialog{
+    border:0;
+    border-radius:24px;
+    background:var(--paper);
+    color:var(--ink);
+    width:min(420px,92%);
+    padding:1.4rem;
+}
+dialog::backdrop{
+    background:rgba(30,18,10,.55);
+}
+.acts{
+    display:flex;
+    gap:.6rem;
+    justify-content:flex-end;
+    margin-top:1.2rem;
+}
+.acts button{
+    border:0;
+    border-radius:99px;
+    padding:.6rem 1.2rem;
+    font:1.1rem var(--serif);
+    background:var(--brown);
+    color:#fff;
+    cursor:pointer;
+}
+
+/* ==========================================================================
+   5. SHARED: My Order drawer (added by script.js on every page)
+   ========================================================================== */
+#scrim{
+    position:fixed;
+    inset:0;
+    z-index:40;
+    background:rgba(30,18,10,.45);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s;
+}
+#drawer{
+    position:fixed;
+    top:0;
+    right:0;
+    z-index:50;
+    height:100%;
+    width:min(380px,100%);
+    background:var(--paper);
+    padding:1.2rem;
+    overflow-y:auto;
+    transform:translateX(105%);
+    transition:transform .35s ease;
+}
+.drawer-open #scrim{
+    opacity:1;
+    pointer-events:auto;
+}
+.drawer-open #drawer{
+    transform:none;
+}
+.dh{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:.5rem;
+}
+.dh h3{
+    font-size:1.9rem;
+    color:var(--brown);
+}
+.line{
+    display:flex;
+    justify-content:space-between;
+    gap:.5rem;
+    padding:.6rem 0;
+    border-bottom:1px solid var(--line);
+}
+.line small{
+    display:block;
+}
+.qty{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+}
+.qty button{
+    width:1.9rem;
+    height:1.9rem;
+    border:1px solid var(--line);
+    background:none;
+    border-radius:50%;
+    cursor:pointer;
+}
+.total{
+    display:flex;
+    justify-content:space-between;
+    font:1.7rem var(--serif);
+    margin:1rem 0;
+}
+
+/* ==========================================================================
+   6. SHARED: message box (toast) and footer
+   ========================================================================== */
+#toast{
+    position:fixed;
+    left:50%;
+    bottom:1.2rem;
+    transform:translateX(-50%);
+    background:var(--dark);
+    color:#fff;
+    padding:.6rem 1.2rem;
+    border-radius:99px;
+    display:none;
+    z-index:60;
+}
+.sitefoot{
+    padding:1.2rem 6vw;
+    font-size:.85rem;
+    background:var(--dark);
+    color:#fff;
+}
+.sitefoot a{
+    color:inherit;
+}
+
+/* ==========================================================================
+   7. HOME PAGE (index.html)
+   The hero uses images/hero.jpg.jpg; the colored layer on top keeps the text readable.
+   ========================================================================== */
 .hero{
-    min-height:100vh;
+    position:relative;
     padding:8rem 2rem 3rem 6vw;
     color:#fff;
     display:flex;
     flex-direction:column;
     align-items:flex-start;
     justify-content:center;
-    background:linear-gradient(
-        90deg,rgba(226,128,36,.92),rgba(150,80,30,.55) 45%,rgba(30,18,10,.25)),
-        url(images/hero.jpg.jpg) center/cover,#5a3414
-    }
+    background:linear-gradient(90deg,rgba(226,128,36,.92),rgba(150,80,30,.55) 45%,rgba(30,18,10,.25)), url(images/hero.jpg.jpg) center/cover,#5a3414;
+    min-height:100vh;
+}
 .hero h1{
     font-size:clamp(3.8rem,11vw,8rem);
     line-height:.9;
-    margin:.1em 0 .25em
+    margin:.1em 0 .25em;
 }
 .hero .or{
     display:block;
-    color:var(--or)
+    color:var(--or);
 }
 .lead{
     font-family:var(--mono);
     max-width:30rem;
-    margin:0 0 1.6rem
+    margin:0 0 1.6rem;
 }
 .hstats{
     display:flex;
     gap:2.5rem;
     flex-wrap:wrap;
     margin-top:2.5rem;
-    font-family:var(--serif)
+    font-family:var(--serif);
 }
 .hstats b{
     display:block;
     font-weight:400;
     font-size:2.6rem;
-    line-height:1
+    line-height:1;
 }
 
-/* Menu: carousel of tall photo cards */
+/* phone size */
+@media(max-width:760px){
+    .hero{
+        padding:9rem 1.2rem 3rem;
+    }
+}
+
+/* ==========================================================================
+   8. MENU PAGE (menu.html)
+   Carousel of tall picture cards, then the category bar.
+   ========================================================================== */
 #menu{
     position:relative;
     overflow:hidden;
-    padding:8rem 0 0
+    padding:8rem 0 0;
 }
 #menu::before{
     content:"";
     position:absolute;
     inset:3rem -12% 5rem;
     border:1px solid rgba(255,255,255,.65);
-    border-radius:50%;pointer-events:none
+    border-radius:50%;
+    pointer-events:none;
 }
 .mhead{
     position:relative;
@@ -240,19 +411,19 @@ button,input,select,textarea{
     justify-content:space-between;
     align-items:end;
     gap:1rem;
-    padding:0 4vw 1rem
+    padding:0 4vw 1rem;
 }
 .mhead h2{
     font-size:clamp(3rem,7vw,5rem);
     color:var(--brown);
-    line-height:1
+    line-height:1;
 }
 .car{
     position:relative;
     display:flex;
     align-items:center;
     gap:.6rem;
-    padding:0 1rem
+    padding:0 1rem;
 }
 .arr{
     flex:none;
@@ -262,7 +433,7 @@ button,input,select,textarea{
     border-radius:50%;
     background:rgba(255,255,255,.7);
     font-size:1.2rem;
-    cursor:pointer
+    cursor:pointer;
 }
 .track{
     flex:1;
@@ -271,17 +442,16 @@ button,input,select,textarea{
     padding:1rem .5rem;
     overflow-x:auto;
     scroll-snap-type:x mandatory;
-    scrollbar-width:none
+    scrollbar-width:none;
 }
 .track::-webkit-scrollbar{
-    display:none
+    display:none;
 }
 .track.grid{
     flex-wrap:wrap;
     justify-content:center;
-    overflow:visible
+    overflow:visible;
 }
-
 .card{
     position:relative;
     flex:0 0 220px;
@@ -291,20 +461,17 @@ button,input,select,textarea{
     scroll-snap-align:start;
     background:#c9bda9;
     box-shadow:0 8px 20px rgba(60,35,15,.25);
-    transition:all .5s cubic-bezier(0.16,1,0.3,1)
+    transition:all .5s cubic-bezier(0.16,1,0.3,1);
 }
-
 .card>img{
     position:absolute;
     inset:0;
     width:100%;
     height:90%;
     object-fit:contain;
-    overflow:hidden;
     transform:scale(.5);
-    transition:all .5s cubic-bezier(0.16,1,0.3,1)
+    transition:all .5s cubic-bezier(0.16,1,0.3,1);
 }
-
 .badge{
     position:absolute;
     top:.8rem;
@@ -313,7 +480,7 @@ button,input,select,textarea{
     color:#fff;
     border-radius:99px;
     padding:.1rem .6rem;
-    font:.75rem var(--mono)
+    font:.75rem var(--mono);
 }
 .glass{
     position:absolute;
@@ -321,21 +488,22 @@ button,input,select,textarea{
     padding:.7rem 3rem .8rem .9rem;
     color:#fff;
     background:rgba(45,28,16,.55);
-    backdrop-filter:blur(8px)
+    backdrop-filter:blur(8px);
 }
 .glass small{
     display:block;
     font-family:var(--serif);
-    font-size:.8rem;opacity:.85;
+    font-size:.8rem;
+    opacity:.85;
     color:#fff;
 }
 .glass h4{
     font:500 1rem/1.15 var(--mono);
-    color:#efb14c
+    color:#efb14c;
 }
 .glass span{
     font-family:var(--mono);
-    font-size:.95rem
+    font-size:.95rem;
 }
 .plus{
     position:absolute;
@@ -349,18 +517,18 @@ button,input,select,textarea{
     color:var(--ink);
     cursor:pointer;
     font-size:1.1rem;
-    line-height:1
+    line-height:1;
 }
 .plus:disabled{
     opacity:.4;
-    cursor:not-allowed
+    cursor:not-allowed;
 }
 .note{
     position:relative;
     text-align:center;
     color:#6b5a4a;
     font-size:.9rem;
-    margin:.8rem 1rem
+    margin:.8rem 1rem;
 }
 .cats{
     position:relative;
@@ -371,7 +539,7 @@ button,input,select,textarea{
     padding:1rem;
     font:1.05rem var(--mono);
     text-transform:uppercase;
-    margin-top:1.5rem
+    margin-top:1.5rem;
 }
 .cats button{
     background:none;
@@ -381,47 +549,49 @@ button,input,select,textarea{
     padding:.1rem 1.1rem;
     cursor:pointer;
     text-transform:inherit;
-    font:inherit
+    font:inherit;
 }
 .cats button:first-child{
-    border-left:0
+    border-left:0;
 }
 .cats button.on{
     font-weight:500;
     text-decoration:underline;
-    text-underline-offset:6px
+    text-underline-offset:6px;
 }
 
-/*Card hover effects */
-.card:hover {
-  transform: translateY(-10px) scale(1.05);
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border-color: rgba(124, 58, 237, 0.2);
+/* Card hover and press effects */
+.card:hover{
+    transform:translateY(-10px) scale(1.05);
+    box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
-.card:hover .card>img {
-  transform: scale(3);
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1)
+.card:hover .plus{
+    transform:scale(1.2);
+    color:var(--gold);
+    box-shadow:0 0 0 4px rgba(177, 125, 14, 0.2);
 }
-
-.card:hover .plus {
-  transform: scale(1.2);
-  color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(177, 125, 14, 0.2);
+.card:active{
+    transform:translateY(-5px) scale(0.98);
 }
 
-.card:hover .card__button svg {
-  animation: pulse 1.5s infinite;
+/* phone size */
+@media(max-width:760px){
+    .mhead{
+        flex-direction:column;
+        align-items:start;
+    }
+    .arr{
+        display:none;
+    }
+    .cats{
+        font-size:.85rem;
+    }
 }
 
-/* Active State */
-.card:active {
-  transform: translateY(-5px) scale(0.98);
-}
-
-
-/* Our Story */
+/* ==========================================================================
+   9. STORY PAGE (story.html)
+   The story uses images/story.jpg.jpg with a dark layer on top.
+   ========================================================================== */
 #story{
     min-height:90vh;
     padding:7rem 6vw;
@@ -429,40 +599,47 @@ button,input,select,textarea{
     display:flex;
     flex-direction:column;
     justify-content:center;
-    background:linear-gradient(rgba(25,15,8,.6),rgba(25,15,8,.6)),
-    url(images/story.jpg.jpg) center/cover,#3a2412
+    background:linear-gradient(rgba(25,15,8,.6),rgba(25,15,8,.6)), url(images/story.jpg.jpg) center/cover,#3a2412;
 }
 #story .text{
     max-width:100%;
     font:clamp(1.15rem,2.2vw,1.6rem)/1.35 var(--serif);
-    text-align:justify
+    text-align:justify;
 }
 #story .text p{
-    margin:0 0 .8rem
+    margin:0 0 .8rem;
 }
 
-/* Contact */
+/* phone size */
+@media(max-width:760px){
+    #story{
+        padding:6rem 1.2rem;
+    }
+}
+
+/* ==========================================================================
+   10. CONTACT PAGE (contact.html)
+   ========================================================================== */
 #contact{
     background:var(--dark);
     color:#fff;
     min-height:100vh;
-    padding:8rem 6vw 3rem
+    padding:8rem 6vw 3rem;
 }
 #contact h2{
     font-size:2.8rem;
-    margin-bottom:1.5rem
+    margin-bottom:1.5rem;
 }
 #contact .detail{
     display:flex;
     flex-wrap:wrap;
-    gap:5rem
+    gap:5rem;
 }
 #contact form{
     width:100%;
-    max-width:800px
+    max-width:800px;
 }
-#contact input,
-#contact textarea{
+#contact input,#contact textarea{
     background:rgba(255,255,255,.08);
     border-color:rgba(255,255,255,.35);
     color:#fff;
@@ -470,216 +647,65 @@ button,input,select,textarea{
 #contact input:focus,#contact textarea:focus{
     background:rgba(255,255,255,.15);
     border-color:rgba(255,255,255,.55);
-    color:#fff
-}
-#contact .acts{margin-top:1.5rem}
-
-/* Footer */
-.sitefoot{padding:1.2rem 6vw;font-size:.85rem
-}
-.sitefoot{
-    background:var(--dark);color:#fff;
-    padding:1.2rem 6vw;
-    font-size:.85rem}
-.sitefoot a{color:inherit}
-
-/* Forms, dialogs, tables */
-label{
-    display:block;
-    margin:.7rem 0 .2rem;
-    font-weight:500
-}
-input,select,textarea{
-    width:100%;
-    padding:.55rem .7rem;
-    border:1px solid var(--line);
-    border-radius:10px;
-    background:#fbf8f2
-}
-input:focus,select:focus,textarea:focus{
-    border-color:var(--brown)
-}
-input[type=radio],input[type=checkbox]{
-    width:auto;
-    margin-right:.5rem
-}
-dialog{
-    border:0;
-    border-radius:24px;
-    background:var(--paper);
-    color:var(--ink);
-    width:min(420px,92%);
-    padding:1.4rem
-}
-dialog::backdrop{background:rgba(30,18,10,.55)}
-.acts{
-    display:flex;
-    gap:.6rem;
-    justify-content:flex-end;
-    margin-top:1.2rem
-}
-.acts button{
-    border:0;
-    border-radius:99px;
-    padding:.6rem 1.2rem;
-    font:1.1rem var(--serif);
-    background:var(--brown);
     color:#fff;
-    cursor:pointer
-}
-.acts button:disabled{
-    opacity:.4;
-    cursor:not-allowed
-}
-.acts button.cancel{
-    background:var(--line);
-    color:var(--ink)
-}
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin:1rem 0
-}
-th,td{
-    padding:.6rem;
-    border-bottom:1px solid var(--line);
-    text-align:left;
-    vertical-align:middle
-}
-.prev{
-    display:flex;
-    gap:1rem;
-    align-items:center;
-    margin:.8rem 0
-}
-.prev img{
-    width:84px;
-    height:84px;
-    object-fit:contain;
-    border-radius:16px;
-    background:#cbbfae
-}
-small{color:#6b5a4a}
-
-/* My Order drawer */
-#scrim{
-    position:fixed;
-    inset:0;
-    z-index:40;
-    background:rgba(30,18,10,.45);
-    opacity:0;pointer-events:none;transition:opacity .3s}
-#drawer{
-    position:fixed;
-    top:0;
-    right:0;
-    z-index:50;
-    height:100%;
-    width:min(380px,100%);
-    background:var(--paper);
-    padding:1.2rem;
-    overflow-y:auto;
-    transform:translateX(105%);
-    transition:transform .35s ease
-}
-.drawer-open #scrim{
-    opacity:1;
-    pointer-events:auto
-}
-.drawer-open #drawer{
-    transform:none
-}
-.dh{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:.5rem
-}
-.dh h3{
-    font-size:1.9rem;
-    color:var(--brown)
-}
-.line{
-    display:flex;
-    justify-content:space-between;
-    gap:.5rem;
-    padding:.6rem 0;
-    border-bottom:1px solid var(--line)
-}
-.line small{
-    display:block
-}
-.qty{
-    display:flex;
-    align-items:center;
-    gap:.4rem
-}
-.qty button{
-    width:1.9rem;
-    height:1.9rem;
-    border:1px solid var(--line);
-    background:none;
-    border-radius:50%;
-    cursor:pointer
-}
-.total{
-    display:flex;
-    justify-content:space-between;
-    font:1.7rem var(--serif);
-    margin:1rem 0
 }
 
-/* Manage page */
-#manage{
-    background:var(--sand);
-    min-height:100vh;
-    padding-top:6rem
-}
+/* ==========================================================================
+   11. MANAGE PAGE (manage.html)
+   Order: PIN screen, page frame, number stats, tabs, orders, table, item modal preview.
+   ========================================================================== */
+
+/* PIN screen */
 #gate{
     min-height:100vh;
     display:grid;
     place-items:center;
     padding:7rem 1rem 3rem;
-    background:var(--sand)
+    background:var(--sand);
 }
 .gatecard{
     background:var(--paper);
     border-radius:24px;
     padding:2rem;
     width:min(400px,100%);
-    text-align:center
+    text-align:center;
 }
 .gatecard h2{
     font-size:2.8rem;
     color:var(--brown);
     line-height:1;
-    margin-bottom:.6rem
+    margin-bottom:.6rem;
 }
-.gatecard label{text-align:left}
+.gatecard label{
+    text-align:left;
+}
 .pin{
     text-align:center;
     font:1.6rem var(--mono);
     letter-spacing:.5em;
-    padding-left:1em
+    padding-left:1em;
 }
 .err{
     color:var(--warn);
     min-height:1.5em;
-    margin:.6rem 0
+    margin:.6rem 0;
+}
+
+/* Page frame, stats and tabs */
+#manage{
+    background:var(--sand);
+    min-height:100vh;
+    padding-top:6rem;
 }
 .mwrap{
     max-width:1100px;
     margin:auto;
-    padding:0 1.5rem 4rem
+    padding:0 1.5rem 4rem;
 }
 .mwrap h2{
     font-size:clamp(3rem,7vw,5rem);
     color:var(--brown);
-    line-height:1
-}
-.mwrap h3{
-    font-size:2rem;
-    color:var(--brown);
-    margin:2rem 0 .8rem
+    line-height:1;
 }
 .mstats{
     display:flex;
@@ -687,12 +713,12 @@ small{color:#6b5a4a}
     flex-wrap:wrap;
     margin:1rem 0 1.5rem;
     font-family:var(--mono);
-    font-size:.9rem
+    font-size:.9rem;
 }
 .mstats b{
     display:block;
     font:2.6rem/1 var(--serif);
-    color:var(--dark)
+    color:var(--dark);
 }
 .mtabs{
     display:flex;
@@ -700,7 +726,7 @@ small{color:#6b5a4a}
     flex-wrap:wrap;
     margin:1.2rem 0;
     padding-bottom:1rem;
-    border-bottom:1px solid var(--line)
+    border-bottom:1px solid var(--line);
 }
 .mtabs button{
     background:none;
@@ -709,12 +735,12 @@ small{color:#6b5a4a}
     border-radius:99px;
     padding:.4rem 1.2rem;
     cursor:pointer;
-    font:1.2rem var(--serif)
+    font:1.2rem var(--serif);
 }
 .mtabs button.on{
     background:var(--dark);
     border-color:var(--dark);
-    color:#fff
+    color:#fff;
 }
 .mtabs b{
     background:var(--gold);
@@ -722,80 +748,90 @@ small{color:#6b5a4a}
     border-radius:99px;
     padding:0 .5rem;
     margin-left:.4rem;
-    font:500 .8rem var(--mono)
+    font:500 .8rem var(--mono);
 }
 .mtabs b:empty{
-    display:none
+    display:none;
 }
-.panel{min-height:40vh}
+.panel{
+    min-height:40vh;
+}
+
+/* Orders tab and Messages tab */
 .order{
     background:var(--paper);
     border-radius:18px;
     padding:.9rem 1.1rem;
-    margin-bottom:.7rem
+    margin-bottom:.7rem;
 }
-.order.done{opacity:.6}
-.order small{display:block}
+.order-top{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+}
+.order.done{
+    opacity:.6;
+}
+.order small{
+    display:block;
+}
+.order-act{
+    margin:.6rem 0 0;
+}
+
+/* Menu and Stocks tab (table) and the Add/Edit modal preview */
 .wrap{
     overflow-x:auto;
     background:var(--paper);
     border-radius:18px;
-    padding:.5rem
+    padding:.5rem;
 }
 table{
     width:100%;
-    border-collapse:collapse
+    border-collapse:collapse;
+    margin:1rem 0;
 }
 th,td{
-    text-align:left;
     padding:.45rem;
     border-bottom:1px solid var(--line);
-    vertical-align:middle
+    text-align:left;
+    vertical-align:middle;
 }
 th{
     font:500 .85rem var(--mono);
-    color:#6b5a4a
+    color:#6b5a4a;
 }
 td input{
-    width:5.5rem
+    width:5.5rem;
 }
 .th{
     width:46px;
     height:46px;
     object-fit:cover;
     border-radius:12px;
-    display:block
+    display:block;
 }
 .th.def{
     object-fit:contain;
-    background:#cbbfae
+    background:#cbbfae;
 }
-#toast{
-    position:fixed;
-    left:50%;
-    bottom:1.2rem;
-    transform:translateX(-50%);
-    background:var(--dark);
-    color:#fff;
-    padding:.6rem 1.2rem;
-    border-radius:99px;
-    display:none;
-    z-index:60
+.prev{
+    display:flex;
+    gap:1rem;
+    align-items:center;
+    margin:.8rem 0;
+}
+.prev img{
+    width:84px;
+    height:84px;
+    object-fit:contain;
+    border-radius:16px;
+    background:#cbbfae;
 }
 
+/* phone size */
 @media(max-width:760px){
- .nav{
-    flex-wrap:wrap;
-    padding:.6rem 1rem}.links{order:3;
-        width:100%;gap:1.2rem;
-        overflow-x:auto}
- .hero{padding:9rem 1.2rem 3rem}
- .mhead{
-    flex-direction:column;
-    align-items:start
-}
-.arr{display:none}
- .cats{font-size:.85rem}
- #story{padding:6rem 1.2rem}
- #manage{padding-top:8rem}
+    #manage{
+        padding-top:8rem;
+    }
 }
