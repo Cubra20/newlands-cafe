@@ -23,7 +23,6 @@
     box-sizing:border-box;
 }
 html{
-    font-family:var(--mono);
 }
 @media(prefers-reduced-motion:no-preference){
     html{
@@ -241,6 +240,23 @@ dialog::backdrop{
     cursor:pointer;
 }
 
+/* Search box (Menu page and Manage > Menu and Stocks) */
+.search{
+    position:relative;
+    display:flex;
+}
+.search input{
+    max-width:420px;
+    padding:.7rem 1.2rem;
+    border:1px solid var(--brown);
+    border-radius:99px;
+    background:var(--paper);
+    font-family:var(--mono);
+}
+.search input::placeholder{
+    color:#6b5a4a;
+}
+
 /* ==========================================================================
    5. SHARED: My Order drawer (added by script.js on every page)
    ========================================================================== */
@@ -417,6 +433,10 @@ dialog::backdrop{
     font-size:clamp(3rem,7vw,5rem);
     color:var(--brown);
     line-height:1;
+}
+#menu .search{
+    justify-content:center;
+    padding:0 4vw .5rem;
 }
 .car{
     position:relative;
@@ -706,6 +726,9 @@ dialog::backdrop{
     font-size:clamp(3rem,7vw,5rem);
     color:var(--brown);
     line-height:1;
+}
+.mwrap .search{
+    margin:0 0 1rem;
 }
 .mstats{
     display:flex;
