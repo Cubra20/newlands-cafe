@@ -71,6 +71,10 @@ function seed() {
 function save() { if (!write(KEY, S)) toast('Could not save. The browser storage may be full.'); }
 const item = id => S.items.find(i => i.id === id);
 
+/* TASK: Does an item match what was typed in a search box? (used by the Menu page and the Manage table)
+   HOW: Put the item's name and category together in lowercase and check that it contains the typed text. An empty box matches everything. */
+const matches = (it, q) => (it.name + ' ' + CATS[it.cat].label).toLowerCase().includes(q.trim().toLowerCase());
+
 /* TASK: Redraw what the page shows, and save then redraw.
    HOW: Every render function skips parts that are not on this page, so refresh() is safe everywhere. Call commit() after changing S. */
 function refresh() { renderHero(); renderMenu(); renderCart(); renderManage(); }
@@ -189,22 +193,26 @@ function initHome() {
 /* ==========================================================================
    3. MENU PAGE (menu.html)
    ========================================================================== */
-let curCat = 'hot', pending = null;   // chosen category tab; item id waiting in the size/add-ons dialog
+let curCat = 'hot', pending = null, fullMenu = false;   // chosen category tab; item id waiting in the size/add-ons dialog; "View Full Menu" on/off
 
-/* TASK: Draw the category tabs and the picture cards of the chosen category.
-   HOW: Build HTML with map().join('') and put it in the page with innerHTML. 5 or fewer in stock shows a badge; 0 disables the + button. */
+/* TASK: Draw the category tabs and the picture cards of the chosen category (or of the items that match the search box).
+   HOW: Build HTML with map().join('') and put it in the page with innerHTML. 5 or fewer in stock shows a badge; 0 disables the + button.
+   SEARCH: if something is typed in the search box (#q), show the items of ALL categories that match it (see matches()) as a grid. */
 function renderMenu() {
   if (!$('#items')) return;
-  $('#tabs').innerHTML = Object.keys(CATS).map(c => `<button data-act="cat" data-v="${c}" class="${c === curCat ? 'on' : ''}">${CATS[c].label}</button>`).join('');
-  $('#items').innerHTML = S.items.filter(i => i.cat === curCat).map(i => {
+  const q = $('#q').value.trim();   // what was typed in the search box
+  const list = q ? S.items.filter(i => matches(i, q)) : S.items.filter(i => i.cat === curCat);
+  $('#items').classList.toggle('grid', fullMenu || !!q);   // search results and "View Full Menu" show a grid
+  $('#tabs').innerHTML = Object.keys(CATS).map(c => `<button data-act="cat" data-v="${c}" class="${!q && c === curCat ? 'on' : ''}">${CATS[c].label}</button>`).join('');
+  $('#items').innerHTML = list.map(i => {
     const out = i.stock <= 0, left = i.stock - inCart(i.id);
     const tag = out ? 'Sold out' : i.stock <= 5 ? i.stock + ' left' : '';
     return `<article class="card ${out ? 'out' : ''}">${picTag(i)}${tag ? `<span class="badge">${tag}</span>` : ''}
       <div class="glass"><small>${CATS[i.cat].label}</small><h4>${esc(i.name)}</h4><span>${i.p.map(peso).join(' / ')}</span>
       <button class="plus" data-act="add" data-id="${i.id}" aria-label="Add ${esc(i.name)}" ${left <= 0 ? 'disabled' : ''}>+</button></div></article>`;
-  }).join('') || '<p class="note">No items in this category yet. Add one in Manage.</p>';
+  }).join('') || `<p class="note">${q ? 'No items match “' + esc(q) + '”.' : 'No items in this category yet. Add one in Manage.'}</p>`;
   const c = CATS[curCat];
-  $('#catnote').textContent = (c.sizes ? 'Prices shown as 8oz / 12oz. ' : '') + (c.add.length ? 'Add-ons: ' + c.add.map(a => `${a[0]} +${peso(a[1])}`).join(', ') + '.' : '');
+  $('#catnote').textContent = q ? list.length + ' item(s) found. Click a category to go back.' : (c.sizes ? 'Prices shown as 8oz / 12oz. ' : '') + (c.add.length ? 'Add-ons: ' + c.add.map(a => `${a[0]} +${peso(a[1])}`).join(', ') + '.' : '');
 }
 
 /* TASK: Ask for the size and add-ons before adding to the order.
@@ -235,12 +243,16 @@ function addToCart(id, size, add) {
 
 /* Menu page buttons: category tabs, + button, "View Full Menu", carousel arrows */
 Object.assign(acts, {
-  cat: b => { curCat = b.dataset.v; renderMenu(); },
+  cat: b => { curCat = b.dataset.v; $('#q').value = ''; renderMenu(); },   // picking a category clears the search
   add: b => openAdd(+b.dataset.id),
-  full: b => { const t = $('#items'); t.classList.toggle('grid'); b.textContent = t.classList.contains('grid') ? 'Show less' : 'View Full Menu'; },
+  full: b => { fullMenu = !fullMenu; b.textContent = fullMenu ? 'Show less' : 'View Full Menu'; renderMenu(); },
   prev: () => $('#items').scrollBy({left: -460, behavior: 'smooth'}),
   next: () => $('#items').scrollBy({left: 460, behavior: 'smooth'})
 });
+
+/* TASK: Search box on the Menu page: show the matching items while typing.
+   HOW: Every time the text changes (the "input" event) draw the menu again; renderMenu() reads the box. */
+on('#q', 'input', renderMenu);
 
 
 /* ==========================================================================
@@ -267,46 +279,32 @@ on('#cform', 'submit', e => {
 
 /* ---- 6.1 PIN gate ----
    TASK: Ask for a PIN before the Manage page opens.
-   HOW: Manage starts hidden and a PIN form (#gate) is shown. The first time there is no PIN, so the form asks to CREATE one (4 to 6 digits, typed twice).
-   After that it asks for the PIN. Only a scrambled version (hashPin) is saved, never the PIN. sessionStorage remembers "unlocked" for this tab only;
-   leaving Manage (or pressing Lock) asks again. NOTE: simple protection for a school project; a page with no server cannot keep a PIN truly secret. */
-const PIN_KEY = 'newlands-pin', UNLOCK = 'newlands-unlocked';
-let gateMode = '', fails = 0, lockUntil = 0;
-function hashPin(p) { let h = 5381; for (const ch of 'newlands:' + p) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0; return String(h); }
-function getPin() { try { return localStorage.getItem(PIN_KEY); } catch (e) { return null; } }
+   HOW: The PIN is written right here in the program (MANAGE_PIN). Manage starts hidden and a PIN form (#gate) is shown. When the typed PIN is the same
+   as MANAGE_PIN, Manage opens. sessionStorage remembers "unlocked" for this tab only; leaving Manage (or pressing Lock) asks again.
+   TO CHANGE THE PIN: change the value of MANAGE_PIN below. NOTE: anyone who opens script.js can read it, so this is simple protection for a school project. */
+const MANAGE_PIN = '1234';   // <-- change this to your own PIN
+const UNLOCK = 'newlands-unlocked';
+let fails = 0, lockUntil = 0;
 function setUnlocked(yes) { try { yes ? sessionStorage.setItem(UNLOCK, '1') : sessionStorage.removeItem(UNLOCK); } catch (e) {} }
 function isUnlocked() { try { return sessionStorage.getItem(UNLOCK) === '1'; } catch (e) { return false; } }
 
-// Show the PIN form. mode 'enter' = ask for the PIN, 'create' = choose a new PIN (also used by "Change PIN").
-function showGate(mode) {
-  gateMode = mode;
+// Show the PIN form and hide Manage.
+function showGate() {
   $('#manage').hidden = true; $('#gate').hidden = false;
-  $('#gtitle').textContent = mode === 'enter' ? 'Staff only' : (getPin() ? 'Change PIN' : 'Create a PIN');
-  $('#gtext').textContent = mode === 'enter' ? 'Enter your PIN to open Manage.' : 'Choose a 4 to 6 digit PIN. You will be asked for it every time you open Manage.';
-  $('#pin2wrap').hidden = mode === 'enter'; $('#gpin2').required = mode === 'create';
-  $('#gcancel').hidden = !(mode === 'create' && getPin());
-  $('#gok').textContent = mode === 'enter' ? 'Unlock' : 'Save PIN';
-  $('#gpin').value = ''; $('#gpin2').value = ''; $('#gerr').textContent = ''; $('#gpin').focus();
+  $('#gpin').value = ''; $('#gerr').textContent = ''; $('#gpin').focus();
 }
 function openManage() { setUnlocked(true); $('#gate').hidden = true; $('#manage').hidden = false; renderManage(); }
 
-/* TASK: Check what was typed in the PIN form.
-   HOW: In 'enter' mode compare hashPin(typed) with the saved one; 5 wrong tries in a row pause the form for 30 seconds.
-   In 'create' mode check it is 4 to 6 digits and both boxes match, then save it and open Manage. */
+/* TASK: Check the PIN that was typed.
+   HOW: Compare it with MANAGE_PIN. 5 wrong tries in a row pause the form for 30 seconds. */
 on('#gform', 'submit', e => {
   e.preventDefault();
-  const pin = $('#gpin').value, err = t => $('#gerr').textContent = t;
-  if (gateMode === 'enter') {
-    if (Date.now() < lockUntil) return err('Too many wrong tries. Wait ' + Math.ceil((lockUntil - Date.now()) / 1000) + ' seconds.');
-    if (hashPin(pin) === getPin()) { fails = 0; return openManage(); }
-    $('#gpin').value = '';
-    if (++fails >= 5) { fails = 0; lockUntil = Date.now() + 30000; return err('Too many wrong tries. Wait 30 seconds.'); }
-    return err('Wrong PIN. Try again.');
-  }
-  if (!/^\d{4,6}$/.test(pin)) return err('The PIN must be 4 to 6 digits (numbers only).');
-  if (pin !== $('#gpin2').value) return err('The two PINs do not match.');
-  try { localStorage.setItem(PIN_KEY, hashPin(pin)); } catch (x) { return err('Could not save the PIN in this browser.'); }
-  toast('PIN saved'); openManage();
+  const err = t => $('#gerr').textContent = t;
+  if (Date.now() < lockUntil) return err('Too many wrong tries. Wait ' + Math.ceil((lockUntil - Date.now()) / 1000) + ' seconds.');
+  if ($('#gpin').value === MANAGE_PIN) { fails = 0; return openManage(); }
+  $('#gpin').value = '';
+  if (++fails >= 5) { fails = 0; lockUntil = Date.now() + 30000; return err('Too many wrong tries. Wait 30 seconds.'); }
+  err('Wrong PIN. Try again.');
 });
 
 /* ---- 6.2 Top of the page: numbers + tabs ---- */
@@ -343,13 +341,14 @@ function renderOrders() {
 }
 
 /* ---- 6.4 Menu and Stocks tab ---- */
-/* TASK: Show every item in a table: picture, name, category, price, stock, Edit and Remove.
+/* TASK: Show the items in a table (picture, name, category, price, stock, Edit, Remove). Only items that match the search box (#mq) are listed.
    HOW: Each price/stock cell is an <input> with data-f; the "change" listener below saves it. */
 function renderInventory() {
-  $('#inv').innerHTML = S.items.map(i => `<tr><td>${picTag(i, 'th')}</td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
+  const rows = S.items.filter(i => matches(i, $('#mq').value));   // search box above the table
+  $('#inv').innerHTML = rows.map(i => `<tr><td>${picTag(i, 'th')}</td><td>${esc(i.name)}</td><td>${CATS[i.cat].label}</td>
     <td><input type="number" min="1" data-f="price" data-id="${i.id}" value="${i.p[0]}" aria-label="Price of ${esc(i.name)}"></td>
     <td><input type="number" min="0" data-f="stock" data-id="${i.id}" value="${i.stock}" aria-label="Stock of ${esc(i.name)}"></td>
-    <td><button class="ghost" data-act="edit" data-id="${i.id}">Edit</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('');
+    <td><button class="ghost" data-act="edit" data-id="${i.id}">Edit</button> <button class="ghost" data-act="del" data-id="${i.id}">Remove</button></td></tr>`).join('') || '<tr><td colspan="6">No items match your search.</td></tr>';
 }
 
 /* TASK: Edit stock or price straight from the table.
@@ -361,6 +360,10 @@ function editField(el) {
   commit();
 }
 document.addEventListener('change', e => { if (e.target.dataset.f) editField(e.target); });
+
+/* TASK: Search box above the table: show only the matching items while typing.
+   HOW: Every time the text changes (the "input" event) draw the table again; renderInventory() reads the box. */
+on('#mq', 'input', renderInventory);
 
 /* "Add a menu item" / "Edit" modal.
    TASK: Open the modal, preview the picture, save a NEW item or the changes to an item.
@@ -408,10 +411,8 @@ function renderMessages() {
   $('#msgs').innerHTML = S.msgs.map(m => `<div class="order"><b>${esc(m.n)}</b> (${esc(m.e)})<br>${esc(m.m)}</div>`).join('') || '<p>No messages yet.</p>';
 }
 
-/* Manage page buttons: PIN, tabs, orders, items, reset */
+/* Manage page buttons: lock, tabs, orders, items, reset */
 Object.assign(acts, {
-  changepin: () => showGate('create'),
-  gcancel: openManage,
   lock: () => { setUnlocked(false); location.reload(); },
   tab: b => showTab(b.dataset.v),
   status: b => { const o = S.orders.find(o => o.no === +b.dataset.no); o.status = o.status === 'Pending' ? 'Served' : 'Pending'; commit(); },
@@ -426,7 +427,7 @@ Object.assign(acts, {
    HOW: Fill the category list of the modal. Already unlocked in this tab = open; otherwise show the PIN form. */
 function initManage() {
   $('#ac').innerHTML = Object.keys(CATS).map(c => `<option value="${c}">${CATS[c].label}</option>`).join('');
-  if (isUnlocked() && getPin()) openManage(); else showGate(getPin() ? 'enter' : 'create');
+  if (isUnlocked()) openManage(); else showGate();
 }
 
 

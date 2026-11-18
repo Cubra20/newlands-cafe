@@ -13,13 +13,14 @@ I made it using only **HTML, CSS and JavaScript**. No Python, no framework and n
 - Hot drinks have sizes (8oz or 12oz) and some items have add-ons like Extra Espresso or Extra Rice
 - Add items to **My Order** (it opens from the right side) and place the order with a name or table
 - My Order stays even if you go to another page
+- Search for an item in the Menu page (type a name or a category like “iced”)
 - Read the story of the café and send a message in the Contact page
 
 **For the staff (Manage page)**
 - Protected by a **PIN**
 - Three tabs: **Orders**, **Menu and Stocks**, **Messages**
 - Orders: see all orders and mark them as served
-- Menu and Stocks: add, edit or remove menu items, and change the price and stock right in the table
+- Menu and Stocks: add, edit or remove menu items, and change the price and stock right in the table. There is also a search box above the table
 - Stock goes down every time an order is placed. At 5 or less it shows a “left” badge and at 0 it shows “Sold out” and the item can’t be ordered
 - Messages: read what the customers sent in the Contact page
 - Shows the number of orders, total sales, pending orders and low stock
@@ -44,11 +45,10 @@ That’s all. No installing needed. You only need internet for the Google Fonts.
 
 ## The PIN
 
-- The first time you open **Manage**, it asks you to **create a PIN** (4 to 6 numbers)
-- After that it asks for the PIN every time you open Manage
+- The PIN is set **inside the program**. Open `script.js`, find `MANAGE_PIN` (in the Manage page part) and change the number to your own PIN. The starting PIN is `1234`, so please change it!
+- Every time you open **Manage** it asks for the PIN
 - After 5 wrong tries you need to wait 30 seconds
-- There are **Lock** and **Change PIN** buttons inside Manage
-- If you forget the PIN: open the browser developer tools, go to Application → Local Storage, and delete the item called `newlands-pin`
+- There is a **Lock** button inside Manage. Leaving the Manage page also locks it again
 
 ## Pictures of the items
 
@@ -87,14 +87,14 @@ Both `style.css` and `script.js` are arranged **per page** with titles and comme
 
 ## Where the data is saved
 
-Everything (menu, stock, orders, messages, My Order and the PIN) is saved in the **browser’s localStorage**. This means:
+Everything (menu, stock, orders, messages and My Order) is saved in the **browser’s localStorage**. This means:
 - It stays when you close the page
 - It is saved only in that browser and that computer. Another computer will have its own data
 - If you clear the browser data, it will be gone. The **Reset all data** button in Manage also deletes the orders, messages and stock changes
 
 ## Limitations
 
-- The PIN is only simple protection. Since there is no server, someone who knows how to use the browser developer tools can still get around it. Good enough for a school project, not for a real shop
+- The PIN is only simple protection. It is written inside `script.js`, so anyone who opens that file (or the browser developer tools) can read it. Good enough for a school project, not for a real shop
 - No real database, so no sharing of orders between different computers
 - No online payment, it only records the order
 
@@ -109,4 +109,5 @@ Everything (menu, stock, orders, messages, My Order and the PIN) is saved in the
 ## Credits
 
 - Menu and story are from **Newland’s Café** of the **Sisters of Mary School**. Every cup helps a student learn!
+- Group 4 - Team Bossing
 - Team members: *(add the names here)*

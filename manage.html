@@ -18,18 +18,13 @@
 <section id="gate" hidden>
   <form id="gform" class="gatecard" autocomplete="off">
     <p class="eyebrow gold">Newland’s Café</p>
-    <h2 id="gtitle">Staff only</h2>
-    <p id="gtext"></p>
+    <h2>Staff only</h2>
+    <p>Enter the PIN to open Manage.</p>
     <label for="gpin">PIN</label>
-    <input id="gpin" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autocomplete="off">
-    <div id="pin2wrap" hidden>
-      <label for="gpin2">Confirm PIN</label>
-      <input id="gpin2" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
-    </div>
+    <input id="gpin" class="pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="off">
     <p class="err" id="gerr" role="alert"></p>
-    <p><button class="pill dark wide" id="gok">Continue</button></p>
-    <p><button type="button" class="ghost" id="gcancel" data-act="gcancel" hidden>Cancel</button> 
-      <a href="index.html">Back to Home</a></p>
+    <p><button class="pill dark wide">Unlock</button></p>
+    <p><a href="index.html">Back to Home</a></p>
   </form>
 </section>
 
@@ -38,8 +33,7 @@
     <p class="eyebrow gold">Staff only</p>
     <h2>Manage</h2>
     <div class="mstats" id="stats"></div>
-    <p><button class="ghost" data-act="changepin">Change PIN</button> 
-      <button class="ghost" data-act="lock">Lock</button> 
+    <p><button class="ghost" data-act="lock">Lock</button> 
       <button class="ghost" data-act="reset">Reset all data</button></p>
     <div class="mtabs" id="mtabs" role="tablist">
       <button role="tab" data-act="tab" data-v="orders" class="on">Orders <b id="tc-orders"></b></button>
@@ -50,6 +44,7 @@
     <section class="panel" id="tab-menu" hidden>
       <p><button class="pill dark" data-act="newitem">+ Add a menu item</button></p>
       <p><small>Item pictures come from your images folder: images/&lt;group folder&gt;/&lt;item name&gt;.jpg. Use Edit to type a different file name. The shop logo shows when no picture is found.</small></p>
+      <div class="search"><input id="mq" type="search" placeholder="Search items…" aria-label="Search items" autocomplete="off"></div>
       <div class="wrap"><table><thead><tr><th>Photo</th><th>Item</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody id="inv"></tbody></table></div>
     </section>
     <section class="panel" id="tab-msgs" hidden><div id="msgs"></div></section>
