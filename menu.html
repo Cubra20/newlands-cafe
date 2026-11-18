@@ -30,6 +30,7 @@
     </div>
       <button class="pill out" id="fullbtn" data-act="full">View Full Menu</button>
     </div>
+    <div class="search"><input id="q" type="search" placeholder="Search the menu…" aria-label="Search the menu" autocomplete="off"></div>
     <div class="car"><button class="arr" data-act="prev" aria-label="Previous">←</button>
       <div id="items" class="track"></div>
       <button class="arr" data-act="next" aria-label="Next">→</button>
@@ -41,16 +42,8 @@
 
 <footer class="sitefoot">Newland’s Café · Sisters of Mary School · <a href="manage.html">Staff: Manage</a></footer>
 
-<dialog id="dlg">
-  <form method="dialog">
-    <h3 id="dt"></h3>
-    <div id="db"></div>
-  <div class="acts">
-    <button value="x" class="ghost">Cancel</button>
-    <button value="ok" class="pill dark">Add to order</button>
-  </div>
-</form>
-</dialog>
+<dialog id="dlg"><form method="dialog"><h3 id="dt"></h3><div id="db"></div>
+  <div class="acts"><button value="x" class="ghost">Cancel</button><button value="ok" class="pill dark">Add to order</button></div></form></dialog>
 <script src="script.js"></script>
 </body>
 </html>
