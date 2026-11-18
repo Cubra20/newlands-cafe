@@ -22,8 +22,7 @@
 *,*::before,*::after{
     box-sizing:border-box;
 }
-html{
-}
+
 @media(prefers-reduced-motion:no-preference){
     html{
         scroll-behavior:smooth;
